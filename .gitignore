@@ -17,12 +17,17 @@
 /.next/
 /out/
 
+
 # production
 /build
+/dist/
+/.idea/
 
 # misc
 .DS_Store
 *.pem
+Thumbs.db
+Desktop.ini
 
 # debug
 npm-debug.log*
@@ -39,3 +44,26 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#Generated prisma client
+/src/generated/prisma
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# Tests and coverage
+/coverage/
+
+# Local deployment configuration
+.vercel/
+
+# AI coding-agent files (currently not needed in this repo)
+/.agents/
+/.claude/
+/.windsurf/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
