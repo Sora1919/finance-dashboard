@@ -1,11 +1,21 @@
-
-import Link from "next/link";
-import { redirect } from "next/navigation";
-
+import {connection} from "next/server";
+import { Suspense } from "react";
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import LoginForm from "./login-form";
+import Link from "next/link";
 
-export default async function LoginPage() {
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<main className="p-6">Loading login...</main>}>
+            <LoginPageContent />
+        </Suspense>
+    );
+}
+
+async function LoginPageContent() {
+    await connection();
+
     const session = await auth();
 
     if (session?.user) {

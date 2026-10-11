@@ -1,8 +1,19 @@
-
+import {connection} from "next/server";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 
 export default async function DashboardPage() {
+    return (
+        <Suspense fallback={<main className="p-6">Loading dashboard...</main>}>
+            <DashboardContent/>
+        </Suspense>
+    )
+}
+
+async function DashboardContent() {
+    await connection();
+
     const session = await auth();
 
     if (!session?.user?.id) {

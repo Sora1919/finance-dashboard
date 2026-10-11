@@ -4,13 +4,25 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import RegisterForm from "./register-form";
+import {Suspense} from "react";
+import {connection} from "next/server";
 
 export default async function RegisterPage() {
+    return (
+        <Suspense fallback={<main className="p-6">Loading register...</main>}>
+            <RegisterPageContent />
+        </Suspense>
+    )
+}
+
+async function RegisterPageContent() {
+    await connection();
+
     const session = await auth();
 
-    if (session?.user) {
-        redirect("/dashboard");
-    }
+        if (session?.user) {
+            redirect("/dashboard");
+        }
 
     return (
         <main className="flex min-h-screen items-center justify-center p-6">
