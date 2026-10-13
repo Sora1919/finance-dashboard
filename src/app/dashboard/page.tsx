@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { getFinancialSummary } from "@/lib/finance-summary";
+import { getFinanceActivity } from "@/lib/finance-activity";
 
 function Icon({
                   name,
@@ -126,10 +127,21 @@ function SummaryCard({
 function DashboardOverview({
                                name,
                                summary,
+                               activity,
                            }: {
     name: string;
     summary: Awaited<ReturnType<typeof getFinancialSummary>>;
+    activity: Awaited<ReturnType<typeof getFinanceActivity>>;
 }) {
+
+    const maxCashFlow = Math.max(
+        1,
+        ...activity.months.flatMap((month) => [
+            month.income,
+            month.expenses,
+        ]),
+    );
+
     return (
         <div className="min-h-screen bg-[#f7f8fa] text-slate-900">
             <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-slate-200 bg-white px-5 py-6 lg:flex">
@@ -247,22 +259,53 @@ function DashboardOverview({
                                 </div>
                                 <span className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-500">Last 6 months</span>
                             </div>
+
                             <div className="mt-8 flex h-48 items-end gap-3 border-b border-slate-100 pb-2 sm:gap-5">
-                                {[35, 55, 42, 72, 48, 82, 60, 45, 68, 52, 88, 63].map((height, index) => (
-                                    <div key={index} className="flex h-full flex-1 items-end justify-center gap-1">
-                                        <div style={{ height: `${height}%` }} className="w-2/5 rounded-t-md bg-emerald-600/80 sm:max-w-5" />
-                                        <div style={{ height: `${Math.max(15, height * 0.55)}%` }} className="w-2/5 rounded-t-md bg-rose-300 sm:max-w-5" />
+                                {activity.months.map((month) => (
+                                    <div
+                                        key={month.label}
+                                        className="flex h-full min-w-0 flex-1 items-end justify-center gap-1"
+                                        title={`${month.label}: Income ${month.income.toFixed(2)}, Expenses ${month.expenses.toFixed(2)}`}
+                                    >
+                                        <div
+                                            className="w-2/5 rounded-t-md bg-emerald-600/80 sm:max-w-5"
+                                            style={{
+                                                height: `${(month.income / maxCashFlow) * 100}%`,
+                                                minHeight: month.income > 0 ? "3px" : "0",
+                                            }}
+                                        />
+                                        <div
+                                            className="w-2/5 rounded-t-md bg-rose-300 sm:max-w-5"
+                                            style={{
+                                                height: `${(month.expenses / maxCashFlow) * 100}%`,
+                                                minHeight: month.expenses > 0 ? "3px" : "0",
+                                            }}
+                                        />
                                     </div>
                                 ))}
                             </div>
+
                             <div className="mt-3 flex justify-between text-[11px] text-slate-400">
-                                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                                {activity.months.map((month) => (
+                                    <span key={month.label}>{month.label}</span>
+                                ))}
                             </div>
+
                             <div className="mt-5 flex gap-5 text-xs text-slate-500">
-                                <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-emerald-600" />Income</span>
-                                <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-rose-300" />Expenses</span>
+                                <span className="flex items-center gap-2">
+                                    <span className="size-2 rounded-full bg-emerald-600" />
+                                    Income
+                                </span>
+                                <span className="flex items-center gap-2">
+                                    <span className="size-2 rounded-full bg-rose-300" />
+                                    Expenses
+                                </span>
                             </div>
-                            <p className="mt-4 text-xs text-slate-400">Illustrative preview — real chart data comes in Step 3.</p>
+
+                            <p className="mt-4 text-xs text-slate-400">
+                                Monthly totals from your transactions · Last six calendar months
+                            </p>
+
                         </article>
 
                         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -299,24 +342,99 @@ function DashboardOverview({
                         </article>
                     </section>
 
-                    <section id="transactions" className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+                    <section
+                        id="transactions"
+                        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                    >
                         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5 sm:px-6">
                             <div>
                                 <h3 className="font-semibold">Recent transactions</h3>
-                                <p className="mt-1 text-sm text-slate-500">Your latest income and expenses</p>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Your latest income and expenses
+                                </p>
                             </div>
-                            <span className="text-sm font-medium text-emerald-700">All transactions <Icon name="chevron" className="inline size-4" /></span>
-                        </div>
-                        <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
-                            <span className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                                <Icon name="receipt" className="size-6" />
+                            <span className="text-sm text-slate-500">
+                                Latest {activity.recentTransactions.length}
                             </span>
-                            <h4 className="mt-4 text-sm font-semibold">No transactions yet</h4>
-                            <p className="mt-1 max-w-sm text-sm text-slate-500">
-                                Your transactions will appear here once we connect the dashboard to your database.
-                            </p>
                         </div>
+
+                        {activity.recentTransactions.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
+                                <span className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+                                    <Icon name="receipt" className="size-6" />
+                                </span>
+                                <h4 className="mt-4 text-sm font-semibold">
+                                    No transactions yet
+                                </h4>
+                                <p className="mt-1 max-w-sm text-sm text-slate-500">
+                                    Your latest income and expenses will appear here when you
+                                    have recorded transactions.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-150 text-left text-sm">
+                                    <thead className="bg-slate-50 text-xs text-slate-500">
+                                        <tr>
+                                            <th className="px-6 py-3 font-medium">Transaction</th>
+                                            <th className="px-6 py-3 font-medium">Category</th>
+                                            <th className="px-6 py-3 font-medium">Date</th>
+                                            <th className="px-6 py-3 font-medium">Type</th>
+                                            <th className="px-6 py-3 text-right font-medium">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                    {activity.recentTransactions.map((transaction) => (
+                                        <tr key={transaction.id} className="hover:bg-slate-50">
+                                            <td className="px-6 py-4 font-medium text-slate-800">
+                                                {transaction.title}
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500">
+                                                {transaction.category}
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500">
+                                                {new Date(transaction.date).toLocaleDateString(
+                                                    "en-US",
+                                                    {
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        year: "numeric",
+                                                        timeZone: "UTC",
+                                                    },
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span
+                                                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                                                        transaction.type === "income"
+                                                            ? "bg-emerald-50 text-emerald-700"
+                                                            : "bg-rose-50 text-rose-700"
+                                                    }`}
+                                                >
+                                                    {transaction.type === "income"
+                                                        ? "Income"
+                                                        : "Expense"}
+                                                </span>
+                                            </td>
+                                            <td
+                                                className={`whitespace-nowrap px-6 py-4 text-right font-semibold tabular-nums ${
+                                                    transaction.type === "income"
+                                                        ? "text-emerald-700"
+                                                        : "text-rose-600"
+                                                }`}
+                                            >
+                                                {transaction.type === "income" ? "+" : "−"}
+                                                {transaction.amount}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </section>
+
 
                     <footer className="pb-2 text-center text-xs text-slate-400">
                         Mintly Finance · Your finances, made clearer.
@@ -360,11 +478,14 @@ async function DashboardContent() {
 
     const summary = await getFinancialSummary(session.user.id);
 
+    const activity = await getFinanceActivity(session.user.id);
+
     return (
         <>
             <DashboardOverview
                 name={displayName}
                 summary={summary}
+                activity={activity}
             />
 
             <div className="fixed right-4 top-4 z-50">
