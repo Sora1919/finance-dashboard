@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { getFinancialSummary } from "@/lib/finance-summary";
 import { getFinanceActivity } from "@/lib/finance-activity";
+import TransactionForm from "./transaction-form";
 
 function Icon({
                   name,
@@ -220,10 +221,7 @@ function DashboardOverview({
                                 Here’s an overview of your finances.
                             </p>
                         </div>
-                        <a href="#transactions" className="inline-flex w-fit items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">
-                            <Icon name="plus" className="size-4" />
-                            Add transaction
-                        </a>
+                        <TransactionForm />
                     </section>
 
                     <section aria-label="Financial summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
