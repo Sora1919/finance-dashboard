@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { getFinancialSummary } from "@/lib/finance-summary";
 
 function Icon({
                   name,
@@ -122,7 +123,13 @@ function SummaryCard({
     );
 }
 
-function DashboardOverview({ name }: { name: string }) {
+function DashboardOverview({
+                               name,
+                               summary,
+                           }: {
+    name: string;
+    summary: Awaited<ReturnType<typeof getFinancialSummary>>;
+}) {
     return (
         <div className="min-h-screen bg-[#f7f8fa] text-slate-900">
             <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-slate-200 bg-white px-5 py-6 lg:flex">
@@ -208,9 +215,27 @@ function DashboardOverview({ name }: { name: string }) {
                     </section>
 
                     <section aria-label="Financial summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        <SummaryCard title="Current balance" amount="$0.00" change="Income minus expenses" icon="wallet" type="balance" />
-                        <SummaryCard title="Total income" amount="$0.00" change="Across all your transactions" icon="arrow-down" type="income" />
-                        <SummaryCard title="Total expenses" amount="$0.00" change="Across all your transactions" icon="arrow-up" type="expense" />
+                        <SummaryCard
+                            title="Current balance"
+                            amount={summary.currentBalance}
+                            change="Income minus expenses"
+                            icon="wallet"
+                            type="balance"
+                        />
+                        <SummaryCard
+                            title="Total income"
+                            amount={summary.totalIncome}
+                            change={`${summary.incomeCount} income transactions`}
+                            icon="arrow-down"
+                            type="income"
+                        />
+                        <SummaryCard
+                            title="Total expenses"
+                            amount={summary.totalExpenses}
+                            change={`${summary.expenseCount} expense transactions`}
+                            icon="arrow-up"
+                            type="expense"
+                        />
                     </section>
 
                     <section className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
@@ -246,17 +271,23 @@ function DashboardOverview({ name }: { name: string }) {
                             <div className="mt-6 space-y-5">
                                 <div className="flex items-center justify-between gap-3">
                                     <span className="text-sm text-slate-500">Income records</span>
-                                    <span className="font-semibold tabular-nums">0</span>
+                                    <span className="font-semibold tabular-nums">
+                                        {summary.incomeCount}
+                                    </span>
                                 </div>
                                 <div className="h-px bg-slate-100" />
                                 <div className="flex items-center justify-between gap-3">
                                     <span className="text-sm text-slate-500">Expense records</span>
-                                    <span className="font-semibold tabular-nums">0</span>
+                                    <span className="font-semibold tabular-nums">
+                                        {summary.expenseCount}
+                                    </span>
                                 </div>
                                 <div className="h-px bg-slate-100" />
                                 <div className="flex items-center justify-between gap-3">
                                     <span className="text-sm text-slate-500">Savings rate</span>
-                                    <span className="font-semibold tabular-nums">—</span>
+                                    <span className="font-semibold tabular-nums">
+                                        {summary.savingsRate ?? "—"}
+                                    </span>
                                 </div>
                             </div>
                             <div className="mt-7 rounded-xl bg-slate-50 p-4">
@@ -327,9 +358,15 @@ async function DashboardContent() {
 
     const displayName = session.user.name ?? session.user.email ?? "there";
 
+    const summary = await getFinancialSummary(session.user.id);
+
     return (
         <>
-            <DashboardOverview name={displayName} />
+            <DashboardOverview
+                name={displayName}
+                summary={summary}
+            />
+
             <div className="fixed right-4 top-4 z-50">
                 <form
                     action={async () => {
