@@ -7,6 +7,7 @@ import { getFinancialSummary } from "@/lib/finance-summary";
 import { getFinanceActivity } from "@/lib/finance-activity";
 import TransactionForm from "./transaction-form";
 import TransactionActions from "./transaction-actions";
+import DashboardNavigation from "./dashboard-navigation";
 
 function Icon({
                   name,
@@ -53,34 +54,6 @@ function Icon({
             return <svg {...common}><circle cx="12" cy="12" r="9" /></svg>;
     }
 }
-
-function SidebarLink({
-                         icon,
-                         label,
-                         active = false,
-                         href,
-                     }: {
-    icon: string;
-    label: string;
-    active?: boolean;
-    href: string;
-}) {
-    return (
-        <a
-            href={href}
-            aria-current={active ? "page" : undefined}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-                active
-                    ? "bg-emerald-50 text-emerald-800"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-            }`}
-        >
-            <Icon name={icon} className="size-4.5" />
-            {label}
-        </a>
-    );
-}
-
 function SummaryCard({
                          title,
                          amount,
@@ -160,10 +133,8 @@ function DashboardOverview({
                 <p className="mb-3 mt-10 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                     Workspace
                 </p>
-                <nav className="space-y-1">
-                    <SidebarLink icon="grid" label="Overview" active href="#overview" />
-                    <SidebarLink icon="receipt" label="Transactions" href="#transactions" />
-                </nav>
+
+                <DashboardNavigation />
 
                 <p className="mb-3 mt-9 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                     Preferences
