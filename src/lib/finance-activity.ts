@@ -49,6 +49,7 @@ export async function getFinanceActivity(userId: string) {
                 category: true,
                 amount: true,
                 type: true,
+                description: true,
                 date: true,
             },
         }),
@@ -105,7 +106,16 @@ export async function getFinanceActivity(userId: string) {
             title: transaction.title,
             category: transaction.category,
             type: transaction.type,
+            // Formatted value for displaying in the dashboard
             amount: formatMoney(amountToCents(transaction.amount)),
+
+            // Raw decimal string for the edit form
+            rawAmount: transaction.amount.toString(),
+
+            // Preserve the original description
+            description: transaction.description,
+
+            // ISO date works with the date input after slicing
             date: transaction.date.toISOString(),
         })),
     };

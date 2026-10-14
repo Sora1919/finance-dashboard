@@ -6,6 +6,7 @@ import { auth, signOut } from "@/auth";
 import { getFinancialSummary } from "@/lib/finance-summary";
 import { getFinanceActivity } from "@/lib/finance-activity";
 import TransactionForm from "./transaction-form";
+import TransactionActions from "./transaction-actions";
 
 function Icon({
                   name,
@@ -379,7 +380,8 @@ function DashboardOverview({
                                             <th className="px-6 py-3 font-medium">Category</th>
                                             <th className="px-6 py-3 font-medium">Date</th>
                                             <th className="px-6 py-3 font-medium">Type</th>
-                                            <th className="px-6 py-3 text-right font-medium">Amount</th>
+                                            <th className="px-6 py-3 font-medium">Amount</th>
+                                            <th className="px-6 py-3 font-medium text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
@@ -416,7 +418,7 @@ function DashboardOverview({
                                                 </span>
                                             </td>
                                             <td
-                                                className={`whitespace-nowrap px-6 py-4 text-right font-semibold tabular-nums ${
+                                                className={`whitespace-nowrap px-6 py-4 font-semibold tabular-nums ${
                                                     transaction.type === "income"
                                                         ? "text-emerald-700"
                                                         : "text-rose-600"
@@ -424,6 +426,19 @@ function DashboardOverview({
                                             >
                                                 {transaction.type === "income" ? "+" : "−"}
                                                 {transaction.amount}
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <TransactionActions
+                                                    transaction={{
+                                                        id: transaction.id,
+                                                        title: transaction.title,
+                                                        amount: transaction.rawAmount,
+                                                        type: transaction.type,
+                                                        category: transaction.category,
+                                                        description: transaction.description,
+                                                        date: transaction.date,
+                                                    }}
+                                                />
                                             </td>
                                         </tr>
                                     ))}
