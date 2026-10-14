@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     if (!session?.user?.id) {
         return NextResponse.json(
-            { error: "You must be signed in to create a transaction." },
+            { error: "You must be signed in to create a transactions." },
             { status: 401 },
         );
     }
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     if (!parsed.success) {
         return NextResponse.json(
             {
-                error: "Please check the transaction details.",
+                error: "Please check the transactions details.",
                 details: parsed.error.flatten().fieldErrors,
             },
             { status: 400 },
@@ -89,10 +89,10 @@ export async function POST(request: Request) {
             { status: 201 },
         );
     } catch (error) {
-        console.error("Failed to create transaction:", error);
+        console.error("Failed to create transactions:", error);
 
         return NextResponse.json(
-            { error: "Unable to create the transaction right now." },
+            { error: "Unable to create the transactions right now." },
             { status: 500 },
         );
     }

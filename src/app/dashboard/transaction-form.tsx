@@ -47,7 +47,7 @@ export default function TransactionForm() {
                 setError(
                     firstFieldError ??
                     result.error ??
-                    "Unable to save this transaction.",
+                    "Unable to save this transactions.",
                 );
                 return;
             }
@@ -247,7 +247,7 @@ export default function TransactionForm() {
                                     disabled={isSubmitting}
                                     className="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    {isSubmitting ? "Saving..." : "Save transaction"}
+                                    {isSubmitting ? "Saving..." : "Save transactions"}
                                 </button>
                             </div>
                         </form>

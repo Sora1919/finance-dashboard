@@ -87,7 +87,7 @@ export default function TransactionActions({
                 setError(
                     firstFieldError ??
                     result.error ??
-                    "Unable to update this transaction.",
+                    "Unable to update this transactions.",
                 );
                 return;
             }
@@ -125,7 +125,7 @@ export default function TransactionActions({
                     .catch(() => ({}));
 
                 setError(
-                    result.error ?? "Unable to delete this transaction.",
+                    result.error ?? "Unable to delete this transactions.",
                 );
                 return;
             }

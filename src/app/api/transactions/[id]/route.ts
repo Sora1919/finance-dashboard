@@ -63,7 +63,7 @@ export async function PATCH(
     if (!parsed.success) {
         return NextResponse.json(
             {
-                error: "Please check the transaction details.",
+                error: "Please check the transactions details.",
                 details: parsed.error.flatten().fieldErrors,
             },
             { status: 400 },
@@ -134,10 +134,10 @@ export async function PATCH(
             },
         });
     } catch (error) {
-        console.error("Failed to update transaction:", error);
+        console.error("Failed to update transactions:", error);
 
         return NextResponse.json(
-            { error: "Unable to update the transaction right now." },
+            { error: "Unable to update the transactions right now." },
             { status: 500 },
         );
     }
@@ -182,10 +182,10 @@ export async function DELETE(
 
         return new Response(null, { status: 204 });
     } catch (error) {
-        console.error("Failed to delete transaction:", error);
+        console.error("Failed to delete transactions:", error);
 
         return NextResponse.json(
-            { error: "Unable to delete the transaction right now." },
+            { error: "Unable to delete the transactions right now." },
             { status: 500 },
         );
     }
