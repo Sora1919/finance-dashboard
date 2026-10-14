@@ -5,6 +5,7 @@ import TransactionActions from "../transaction-actions";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { Prisma } from "@/generated/prisma/client";
 
 type SearchParams = Promise<{
     q?: string;
@@ -100,7 +101,7 @@ async function TransactionsContent({
         ? params.sort!
         : "date-desc";
 
-    const where = {
+    const where: Prisma.TransactionWhereInput = {
         userId: session.user.id,
         ...(type ? { type } : {}),
         ...(category ? { category } : {}),
