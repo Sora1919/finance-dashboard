@@ -118,49 +118,7 @@ function DashboardOverview({
     );
 
     return (
-        <div className="min-h-screen bg-[#f7f8fa] text-slate-900">
-            <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-slate-200 bg-white px-5 py-6 lg:flex">
-                <a href="/dashboard" className="flex items-center gap-3 px-2">
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-emerald-700 text-white">
-                        <Icon name="wallet" className="size-6" />
-                    </span>
-                    <span>
-                        <span className="block text-base font-bold tracking-tight">Mintly</span>
-                        <span className="block text-xs text-slate-400">Personal finance</span>
-                    </span>
-                </a>
-
-                <p className="mb-3 mt-10 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                    Workspace
-                </p>
-
-                <DashboardNavigation />
-
-                <p className="mb-3 mt-9 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                    Preferences
-                </p>
-                <nav className="space-y-1">
-                    <span className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400" title="Coming in a future step">
-                        <Icon name="chart" className="size-4.5" />
-                        Reports
-                        <span className="ml-auto text-[10px]">Soon</span>
-                    </span>
-                    <span className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400" title="Coming in a future step">
-                        <Icon name="settings" className="size-4.5" />
-                        Settings
-                        <span className="ml-auto text-[10px]">Soon</span>
-                    </span>
-                </nav>
-
-                <div className="mt-auto rounded-2xl bg-emerald-50 p-4">
-                    <p className="text-sm font-semibold text-emerald-950">Small steps add up.</p>
-                    <p className="mt-1 text-xs leading-5 text-emerald-800">
-                        Keep track of your money and make every decision count.
-                    </p>
-                </div>
-            </aside>
-
-            <div className="lg:pl-64">
+            <div className="px-4 py-8 pb-24 text-slate-900 sm:px-6 lg:px-8 lg:pb-8">
                 <header className="sticky top-0 z-10 flex h-18 items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-8">
                     <div className="min-w-0">
                         <p className="text-xs text-slate-400">Workspace / Overview</p>
@@ -425,19 +383,6 @@ function DashboardOverview({
                     </footer>
                 </main>
             </div>
-
-            <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 border-t border-slate-200 bg-white/95 p-2 backdrop-blur lg:hidden">
-                <a href="#overview" className="flex flex-col items-center gap-1 rounded-lg py-2 text-xs font-medium text-emerald-800">
-                    <Icon name="grid" />
-                    Overview
-                </a>
-                <a href="#transactions" className="flex flex-col items-center gap-1 rounded-lg py-2 text-xs font-medium text-slate-500">
-                    <Icon name="receipt" />
-                    Transactions
-                </a>
-            </nav>
-            <div className="h-16 lg:hidden" />
-        </div>
     );
 }
 

@@ -184,7 +184,7 @@ async function TransactionsContent({
     }
 
     return (
-        <main className="min-h-screen bg-[#f7f8fa] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+        <main className="px-4 py-8 pb-24 text-slate-900 sm:px-6 lg:px-8 lg:pb-8">
             <div className="mx-auto max-w-7xl space-y-6">
                 <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
