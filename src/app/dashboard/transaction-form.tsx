@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 const initialForm = {
@@ -18,11 +18,25 @@ export default function TransactionForm() {
     const [isOpen, setIsOpen] = useState(false);
     const [form, setForm] = useState(initialForm);
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!success) return;
+
+        const timeoutId = window.setTimeout(() => {
+            setSuccess("");
+        }, 4000);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [success]);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (isSubmitting) return;
+
         setError("");
+        setSuccess("");
         setIsSubmitting(true);
 
         try {
@@ -57,6 +71,7 @@ export default function TransactionForm() {
                 date: new Date().toLocaleDateString("en-CA"),
             });
             setIsOpen(false);
+            setSuccess("Transaction saved successfully");
             router.refresh();
         } catch {
             setError("Network error. Please try again.");
@@ -67,6 +82,15 @@ export default function TransactionForm() {
 
     return (
         <>
+            {success && (
+                <p
+                    role="status"
+                    className="mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
+                >
+                    {success}
+                </p>
+            )}
+
             <button
                 type="button"
                 onClick={() => {
@@ -247,7 +271,7 @@ export default function TransactionForm() {
                                     disabled={isSubmitting}
                                     className="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    {isSubmitting ? "Saving..." : "Save transactions"}
+                                    {isSubmitting ? "Saving..." : "Save transaction"}
                                 </button>
                             </div>
                         </form>
