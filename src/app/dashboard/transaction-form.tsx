@@ -20,6 +20,10 @@ export default function TransactionForm() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    const addButtonRef = useRef<HTMLButtonElement>(null);
+    const dialogRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
         if (!success) return;
@@ -31,12 +35,110 @@ export default function TransactionForm() {
         return () => window.clearTimeout(timeoutId);
     }, [success]);
 
+    useEffect(() => {
+        if (isOpen) {
+            dialogRef.current
+                ?.querySelector<HTMLInputElement>("#transaction-title")
+                ?.focus();
+        } else {
+            addButtonRef.current?.focus();
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                if (!isSubmitting) {
+                    setIsOpen(false);
+                }
+                return;
+            }
+
+            if (event.key !== "Tab") return;
+
+            const dialog = dialogRef.current;
+            if (!dialog) return;
+
+            const focusableElements = dialog.querySelectorAll<HTMLElement>(
+                'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+            );
+
+            if (focusableElements.length === 0) return;
+
+            const first = focusableElements[0];
+            const last = focusableElements[focusableElements.length - 1];
+
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isOpen, isSubmitting]);
+
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (isSubmitting) return;
 
         setError("");
+        setFieldErrors({});
         setSuccess("");
+
+        const nextFieldErrors: Record<string, string> = {};
+
+        if (!form.title.trim()) {
+            nextFieldErrors.title = "Please enter a title.";
+        }
+
+        const amount = Number(form.amount);
+
+        if (!form.amount || !Number.isFinite(amount) || amount < 0.01) {
+            nextFieldErrors.amount = "Enter an amount greater than zero.";
+        } else if (amount > 9999999999.99) {
+            nextFieldErrors.amount = "The amount is too large.";
+        }
+
+        if (!["income", "expense"].includes(form.type)) {
+            nextFieldErrors.type = "Please select a valid transaction type.";
+        }
+
+        if (!form.category.trim()) {
+            nextFieldErrors.category = "Please enter a category.";
+        }
+
+        if (!form.date) {
+            nextFieldErrors.date = "Please select a date.";
+        }
+
+        if (form.title.length > 120) {
+            nextFieldErrors.title = "Title must be 120 characters or fewer.";
+        }
+
+        if (form.category.length > 80) {
+            nextFieldErrors.category = "Category must be 80 characters or fewer.";
+        }
+
+        if (form.description.length > 500) {
+            nextFieldErrors.description =
+                "Description must be 500 characters or fewer.";
+        }
+
+        if (Object.keys(nextFieldErrors).length > 0) {
+            setFieldErrors(nextFieldErrors);
+            setError("");
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -54,15 +156,27 @@ export default function TransactionForm() {
             } = await response.json();
 
             if (!response.ok) {
-                const firstFieldError = result.details
-                    ? Object.values(result.details).flat().find(Boolean)
-                    : undefined;
+                const details = result.details ?? {};
 
-                setError(
-                    firstFieldError ??
-                    result.error ??
-                    "Unable to save this transactions.",
+                const nextFieldErrors = Object.fromEntries(
+                    Object.entries(details)
+                        .map(([field, messages]) => [
+                            field,
+                            messages?.find(Boolean),
+                        ])
+                        .filter((entry): entry is [string, string] =>
+                            typeof entry[1] === "string",
+                        ),
                 );
+
+                setFieldErrors(nextFieldErrors);
+
+                if (Object.keys(nextFieldErrors).length === 0) {
+                    setError(
+                        result.error ?? "Unable to save this transaction.",
+                    );
+                }
+
                 return;
             }
 
@@ -92,6 +206,7 @@ export default function TransactionForm() {
             )}
 
             <button
+                ref={addButtonRef}
                 type="button"
                 onClick={() => {
                     setError("");
@@ -113,6 +228,7 @@ export default function TransactionForm() {
                     }}
                 >
                     <section
+                        ref={dialogRef}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="transaction-form-title"
@@ -142,7 +258,7 @@ export default function TransactionForm() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
                             <div>
                                 <label htmlFor="transaction-title" className="mb-1.5 block text-sm font-medium text-slate-700">
                                     Title
@@ -151,13 +267,39 @@ export default function TransactionForm() {
                                     id="transaction-title"
                                     required
                                     maxLength={120}
-                                    value={form.title}
-                                    onChange={(event) =>
-                                        setForm({ ...form, title: event.target.value })
+                                    aria-invalid={Boolean(fieldErrors.title)}
+                                    aria-describedby={
+                                        fieldErrors.title
+                                            ? "transaction-title-error"
+                                            : undefined
                                     }
+                                    value={form.title}
+                                    onChange={(event) => {
+                                        setForm({ ...form, title: event.target.value });
+
+                                        if (fieldErrors.title) {
+                                            setFieldErrors((current) => {
+                                                const next = { ...current };
+                                                delete next.title;
+                                                return next;
+                                            });
+                                        }
+                                    }}
                                     placeholder="e.g. Monthly salary"
-                                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                    className={`w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-emerald-600/15 ${
+                                        fieldErrors.title
+                                            ? "border-rose-400 focus:border-rose-500"
+                                            : "border-slate-200 focus:border-emerald-600"
+                                    }`}
                                 />
+                                {fieldErrors.title && (
+                                    <p
+                                        id="transaction-title-error"
+                                        className="mt-1.5 text-sm text-rose-600"
+                                    >
+                                        {fieldErrors.title}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid gap-4 sm:grid-cols-2">
@@ -165,6 +307,7 @@ export default function TransactionForm() {
                                     <label htmlFor="transaction-amount" className="mb-1.5 block text-sm font-medium text-slate-700">
                                         Amount (USD)
                                     </label>
+
                                     <input
                                         id="transaction-amount"
                                         required
@@ -172,30 +315,73 @@ export default function TransactionForm() {
                                         min="0.01"
                                         max="9999999999.99"
                                         step="0.01"
-                                        value={form.amount}
-                                        onChange={(event) =>
-                                            setForm({ ...form, amount: event.target.value })
+                                        aria-invalid={Boolean(fieldErrors.amount)}
+                                        aria-describedby={
+                                            fieldErrors.amount ? "transaction-amount-error" : undefined
                                         }
+                                        value={form.amount}
+                                        onChange={(event) => {
+                                            setForm({ ...form, amount: event.target.value });
+                                            setFieldErrors((current) => {
+                                                const next = { ...current };
+                                                delete next.amount;
+                                                return next;
+                                            });
+                                        }}
                                         placeholder="0.00"
-                                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        className={`w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-emerald-600/15 ${
+                                            fieldErrors.amount
+                                                ? "border-rose-400 focus:border-rose-500"
+                                                : "border-slate-200 focus:border-emerald-600"
+                                        }`}
                                     />
+                                    {fieldErrors.amount && (
+                                        <p
+                                            id="transaction-amount-error"
+                                            className="mt-1.5 text-sm text-rose-600"
+                                        >
+                                            {fieldErrors.amount}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
                                     <label htmlFor="transaction-type" className="mb-1.5 block text-sm font-medium text-slate-700">
                                         Type
                                     </label>
+
                                     <select
                                         id="transaction-type"
-                                        value={form.type}
-                                        onChange={(event) =>
-                                            setForm({ ...form, type: event.target.value })
+                                        aria-invalid={Boolean(fieldErrors.type)}
+                                        aria-describedby={
+                                            fieldErrors.type ? "transaction-type-error" : undefined
                                         }
-                                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        value={form.type}
+                                        onChange={(event) => {
+                                            setForm({ ...form, type: event.target.value });
+                                            setFieldErrors((current) => {
+                                                const next = { ...current };
+                                                delete next.type;
+                                                return next;
+                                            });
+                                        }}
+                                        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
+                                            fieldErrors.type
+                                                ? "border-rose-400 focus:border-rose-500"
+                                                : "border-slate-200 focus:border-emerald-600"
+                                        }`}
                                     >
                                         <option value="expense">Expense</option>
                                         <option value="income">Income</option>
                                     </select>
+                                    {fieldErrors.type && (
+                                        <p
+                                            id="transaction-type-error"
+                                            className="mt-1.5 text-sm text-rose-600"
+                                        >
+                                            {fieldErrors.type}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -204,33 +390,77 @@ export default function TransactionForm() {
                                     <label htmlFor="transaction-category" className="mb-1.5 block text-sm font-medium text-slate-700">
                                         Category
                                     </label>
+
                                     <input
                                         id="transaction-category"
                                         required
                                         maxLength={80}
-                                        value={form.category}
-                                        onChange={(event) =>
-                                            setForm({ ...form, category: event.target.value })
+                                        aria-invalid={Boolean(fieldErrors.category)}
+                                        aria-describedby={
+                                            fieldErrors.category ? "transaction-category-error" : undefined
                                         }
+                                        value={form.category}
+                                        onChange={(event) => {
+                                            setForm({ ...form, category: event.target.value });
+                                            setFieldErrors((current) => {
+                                                const next = { ...current };
+                                                delete next.category;
+                                                return next;
+                                            });
+                                        }}
                                         placeholder="e.g. Food, Salary"
-                                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        className={`w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
+                                            fieldErrors.category
+                                                ? "border-rose-400 focus:border-rose-500"
+                                                : "border-slate-200 focus:border-emerald-600"
+                                        }`}
                                     />
+                                    {fieldErrors.category && (
+                                        <p
+                                            id="transaction-category-error"
+                                            className="mt-1.5 text-sm text-rose-600"
+                                        >
+                                            {fieldErrors.category}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
                                     <label htmlFor="transaction-date" className="mb-1.5 block text-sm font-medium text-slate-700">
                                         Date
                                     </label>
+
                                     <input
                                         id="transaction-date"
                                         required
                                         type="date"
-                                        value={form.date}
-                                        onChange={(event) =>
-                                            setForm({ ...form, date: event.target.value })
+                                        aria-invalid={Boolean(fieldErrors.date)}
+                                        aria-describedby={
+                                            fieldErrors.date ? "transaction-date-error" : undefined
                                         }
-                                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        value={form.date}
+                                        onChange={(event) => {
+                                            setForm({ ...form, date: event.target.value });
+                                            setFieldErrors((current) => {
+                                                const next = { ...current };
+                                                delete next.date;
+                                                return next;
+                                            });
+                                        }}
+                                        className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
+                                            fieldErrors.date
+                                                ? "border-rose-400 focus:border-rose-500"
+                                                : "border-slate-200 focus:border-emerald-600"
+                                        }`}
                                     />
+                                    {fieldErrors.date && (
+                                        <p
+                                            id="transaction-date-error"
+                                            className="mt-1.5 text-sm text-rose-600"
+                                        >
+                                            {fieldErrors.date}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -238,17 +468,41 @@ export default function TransactionForm() {
                                 <label htmlFor="transaction-description" className="mb-1.5 block text-sm font-medium text-slate-700">
                                     Description <span className="font-normal text-slate-400">(optional)</span>
                                 </label>
+
                                 <textarea
                                     id="transaction-description"
                                     maxLength={500}
                                     rows={3}
-                                    value={form.description}
-                                    onChange={(event) =>
-                                        setForm({ ...form, description: event.target.value })
+                                    aria-invalid={Boolean(fieldErrors.description)}
+                                    aria-describedby={
+                                        fieldErrors.description
+                                            ? "transaction-description-error"
+                                            : undefined
                                     }
+                                    value={form.description}
+                                    onChange={(event) => {
+                                        setForm({ ...form, description: event.target.value });
+                                        setFieldErrors((current) => {
+                                            const next = { ...current };
+                                            delete next.description;
+                                            return next;
+                                        });
+                                    }}
                                     placeholder="Add a note..."
-                                    className="w-full resize-y rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                    className={`w-full resize-y rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
+                                        fieldErrors.description
+                                            ? "border-rose-400 focus:border-rose-500"
+                                            : "border-slate-200 focus:border-emerald-600"
+                                    }`}
                                 />
+                                {fieldErrors.description && (
+                                    <p
+                                        id="transaction-description-error"
+                                        className="mt-1.5 text-sm text-rose-600"
+                                    >
+                                        {fieldErrors.description}
+                                    </p>
+                                )}
                             </div>
 
                             {error && (
