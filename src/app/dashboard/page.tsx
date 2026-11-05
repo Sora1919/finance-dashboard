@@ -2,12 +2,11 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { getFinancialSummary } from "@/lib/finance-summary";
 import { getFinanceActivity } from "@/lib/finance-activity";
 import TransactionForm from "./transaction-form";
 import TransactionActions from "./transaction-actions";
-import DashboardNavigation from "./dashboard-navigation";
 
 function Icon({
                   name,
@@ -416,22 +415,6 @@ async function DashboardContent() {
                 summary={summary}
                 activity={activity}
             />
-
-            <div className="fixed right-4 top-4 z-50">
-                <form
-                    action={async () => {
-                        "use server";
-                        await signOut({ redirectTo: "/login" });
-                    }}
-                >
-                    <button
-                        type="submit"
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50"
-                    >
-                        Sign out
-                    </button>
-                </form>
-            </div>
         </>
     );
 }
