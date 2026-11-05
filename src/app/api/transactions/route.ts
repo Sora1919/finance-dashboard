@@ -1,25 +1,8 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { z } from "zod";
 import { NextResponse } from "next/server";
-
-const createTransactionSchema = z.object({
-    title: z.string().trim().min(1).max(120),
-    amount: z
-        .string()
-        .trim()
-        .regex(/^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/, {
-            message: "Enter a valid amount with up to two decimal places.",
-        })
-        .refine((value) => Number(value) > 0, {
-            message: "Amount must be greater than zero.",
-        }),
-    type: z.enum(["income", "expense"]),
-    category: z.string().trim().min(1).max(80),
-    description: z.string().trim().max(500).optional(),
-    date: z.iso.date(),
-});
+import { transactionSchema } from "@/lib/validations/transaction";
 
 export async function POST(request: Request) {
     const session = await auth();
@@ -42,7 +25,7 @@ export async function POST(request: Request) {
         );
     }
 
-    const parsed = createTransactionSchema.safeParse(body);
+    const parsed = transactionSchema.safeParse(body);
 
     if (!parsed.success) {
         return NextResponse.json(
