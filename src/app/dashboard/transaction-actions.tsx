@@ -1,7 +1,13 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
+import {
+    useEffect,
+    useRef,
+    useState,
+    type FormEvent,
+    type KeyboardEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 
 type Transaction = {
@@ -51,10 +57,28 @@ export default function TransactionActions({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
+
+    const deleteButtonRef = useRef<HTMLButtonElement>(null);
+    const cancelDeleteRef = useRef<HTMLButtonElement>(null);
+
+    const editButtonRef = useRef<HTMLButtonElement>(null);
+    const editTitleRef = useRef<HTMLInputElement>(null);
+
     function openEditor() {
         setForm(getFormData(transaction));
         setError("");
         setIsEditing(true);
+    }
+
+    function closeEditor() {
+        if (isSubmitting) return;
+
+        setIsEditing(false);
+        setError("");
+
+        editButtonRef.current?.focus();
     }
 
     async function handleUpdate(event: FormEvent<HTMLFormElement>) {
@@ -87,12 +111,13 @@ export default function TransactionActions({
                 setError(
                     firstFieldError ??
                     result.error ??
-                    "Unable to update this transactions.",
+                    "Unable to update this transaction.",
                 );
                 return;
             }
 
             setIsEditing(false);
+            editButtonRef.current?.focus();
             router.refresh();
         } catch {
             setError("Network error. Please try again.");
@@ -102,13 +127,9 @@ export default function TransactionActions({
     }
 
     async function handleDelete() {
-        const confirmed = window.confirm(
-            `Delete "${transaction.title}"? This action cannot be undone.`,
-        );
+        if (isDeleting) return;
 
-        if (!confirmed) return;
-
-        setError("");
+        setDeleteError("");
         setIsDeleting(true);
 
         try {
@@ -124,17 +145,119 @@ export default function TransactionActions({
                     .json()
                     .catch(() => ({}));
 
-                setError(
-                    result.error ?? "Unable to delete this transactions.",
+                setDeleteError(
+                    result.error ?? "Unable to delete this transaction.",
                 );
                 return;
             }
 
+            setIsDeleteOpen(false);
             router.refresh();
         } catch {
-            setError("Network error. Please try again.");
+            setDeleteError("Network error. Please try again.");
         } finally {
             setIsDeleting(false);
+        }
+    }
+
+    useEffect(() => {
+        if (isDeleteOpen) {
+            cancelDeleteRef.current?.focus();
+        }
+    }, [isDeleteOpen]);
+
+    function openDeleteDialog() {
+        if (isDeleting || isSubmitting) return;
+
+        setDeleteError("");
+        setIsDeleteOpen(true);
+    }
+
+    function closeDeleteDialog() {
+        if (isDeleting) return;
+
+        setIsDeleteOpen(false);
+        setDeleteError("");
+        deleteButtonRef.current?.focus();
+    }
+
+    useEffect(() => {
+        if (isEditing) {
+            editTitleRef.current?.focus();
+        }
+    }, [isEditing]);
+
+    function handleDeleteDialogKeyDown(
+        event: KeyboardEvent<HTMLElement>,
+    ) {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeDeleteDialog();
+            return;
+        }
+
+        if (event.key !== "Tab") return;
+
+        const buttons = Array.from(
+            event.currentTarget.querySelectorAll<HTMLButtonElement>(
+                "button:not(:disabled)",
+            ),
+        );
+
+        if (buttons.length === 0) {
+            event.preventDefault();
+            return;
+        }
+
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+
+    function handleEditDialogKeyDown(
+        event: KeyboardEvent<HTMLElement>,
+    ) {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeEditor();
+            return;
+        }
+
+        if (event.key !== "Tab") return;
+
+        const focusableElements = Array.from(
+            event.currentTarget.querySelectorAll<HTMLElement>(
+                'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)',
+            ),
+        );
+
+        if (focusableElements.length === 0) {
+            event.preventDefault();
+            return;
+        }
+
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+
+        if (
+            event.shiftKey &&
+            document.activeElement === first
+        ) {
+            event.preventDefault();
+            last.focus();
+        } else if (
+            !event.shiftKey &&
+            document.activeElement === last
+        ) {
+            event.preventDefault();
+            first.focus();
         }
     }
 
@@ -142,39 +265,33 @@ export default function TransactionActions({
         <>
             <div className="flex items-center justify-end gap-2">
                 <button
+                    ref={editButtonRef}
                     type="button"
                     onClick={openEditor}
-                    disabled={isDeleting}
+                    disabled={isDeleting || isSubmitting || isDeleteOpen}
                     className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
                 >
                     Edit
                 </button>
 
                 <button
+                    ref={deleteButtonRef}
                     type="button"
-                    onClick={handleDelete}
+                    onClick={openDeleteDialog}
                     disabled={isDeleting || isSubmitting}
                     className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                 >
-                    {isDeleting ? "Deleting..." : "Delete"}
+                    Delete
                 </button>
             </div>
-
-            {error && !isEditing && (
-                <p role="alert" className="mt-2 text-xs text-rose-700">
-                    {error}
-                </p>
-            )}
 
             {isEditing && (
                 <div
                     className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
                     onMouseDown={(event) => {
                         if (
-                            event.target === event.currentTarget &&
-                            !isSubmitting
-                        ) {
-                            setIsEditing(false);
+                            event.target === event.currentTarget) {
+                            closeEditor();
                         }
                     }}
                 >
@@ -182,6 +299,7 @@ export default function TransactionActions({
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby={`edit-title-${transaction.id}`}
+                        onKeyDown={handleEditDialogKeyDown}
                         className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl sm:p-7"
                     >
                         <div className="flex items-start justify-between gap-4">
@@ -201,7 +319,7 @@ export default function TransactionActions({
                                 type="button"
                                 aria-label="Close edit form"
                                 disabled={isSubmitting}
-                                onClick={() => setIsEditing(false)}
+                                onClick={closeEditor}
                                 className="rounded-lg px-3 py-1 text-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
                             >
                                 ×
@@ -217,6 +335,7 @@ export default function TransactionActions({
                                     Title
                                 </label>
                                 <input
+                                    ref={editTitleRef}
                                     id={`title-${transaction.id}`}
                                     required
                                     maxLength={120}
@@ -367,7 +486,7 @@ export default function TransactionActions({
                                 <button
                                     type="button"
                                     disabled={isSubmitting}
-                                    onClick={() => setIsEditing(false)}
+                                    onClick={closeEditor}
                                     className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
                                 >
                                     Cancel
@@ -381,6 +500,96 @@ export default function TransactionActions({
                                 </button>
                             </div>
                         </form>
+                    </section>
+                </div>
+            )}
+
+            {isDeleteOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+                    onMouseDown={(event) => {
+                        if (event.target === event.currentTarget) {
+                            closeDeleteDialog();
+                        }
+                    }}
+                >
+                    <section
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby={`delete-title-${transaction.id}`}
+                        aria-describedby={`delete-description-${transaction.id}`}
+                        onKeyDown={handleDeleteDialogKeyDown}
+                        className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl sm:p-7"
+                    >
+                        {/* Warning icon */}
+                        <div className="mb-5 flex size-12 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                            >
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 8v4" />
+                                <path d="M12 16h.01" />
+                            </svg>
+                        </div>
+
+                        <h2
+                            id={`delete-title-${transaction.id}`}
+                            className="text-xl font-bold tracking-tight text-slate-900"
+                        >
+                            Delete transaction?
+                        </h2>
+
+                        <p
+                            id={`delete-description-${transaction.id}`}
+                            className="mt-2 text-sm leading-6 text-slate-500"
+                        >
+                            Are you sure you want to delete{" "}
+                            <span className="font-semibold text-slate-800">
+                                {transaction.title}
+                            </span>
+                            ? This action cannot be undone.
+                        </p>
+
+                        {/* Error feedback */}
+                        {deleteError && (
+                            <p
+                                role="alert"
+                                className="mt-4 rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700"
+                            >
+                                {deleteError}
+                            </p>
+                        )}
+
+                        {/* Actions */}
+                        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                ref={cancelDeleteRef}
+                                type="button"
+                                onClick={closeDeleteDialog}
+                                disabled={isDeleting}
+                                className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                                className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {isDeleting ? "Deleting..." : "Delete transaction"}
+                            </button>
+                        </div>
                     </section>
                 </div>
             )}
