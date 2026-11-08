@@ -5,6 +5,7 @@ import TransactionActions from "../transaction-actions";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { Download } from "lucide-react";
 import { Prisma } from "@/generated/prisma/client";
 
 type SearchParams = Promise<{
@@ -202,6 +203,14 @@ async function TransactionsContent({
                     <p className="text-sm text-slate-500">
                         {totalCount} {totalCount === 1 ? "transaction" : "transactions"}
                     </p>
+
+                    <a
+                        href="/api/transactions/export"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                    >
+                        <Download className="size-4" aria-hidden="true" />
+                        Export CSV
+                    </a>
                 </header>
 
                 <form
