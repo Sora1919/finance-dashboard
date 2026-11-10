@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Download } from "lucide-react";
 import { Prisma } from "@/generated/prisma/client";
+import SignOutButton from "@/app/dashboard/sign-out-button";
 
 type SearchParams = Promise<{
     q?: string;
@@ -187,30 +188,41 @@ async function TransactionsContent({
     return (
         <main className="px-4 py-8 pb-24 text-slate-900 sm:px-6 lg:px-8 lg:pb-8">
             <div className="mx-auto max-w-7xl space-y-6">
-                <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
+                <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    {/* Page title and description */}
+                    <div className="min-w-0">
                         <p className="text-sm font-medium text-emerald-700">
                             Mintly / Finance
                         </p>
+
                         <h1 className="mt-1 text-3xl font-bold tracking-tight">
                             Transactions
                         </h1>
+
                         <p className="mt-2 text-sm text-slate-500">
                             Search, filter, and manage your transaction history.
                         </p>
+
+                        <p className="mt-3 text-sm text-slate-500">
+                            {totalCount}{" "}
+                            {totalCount === 1 ? "transaction" : "transactions"}
+                        </p>
                     </div>
 
-                    <p className="text-sm text-slate-500">
-                        {totalCount} {totalCount === 1 ? "transaction" : "transactions"}
-                    </p>
+                    {/* Header actions */}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <a
+                            href="/api/transactions/export"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                        >
+                            <Download className="size-4" aria-hidden="true" />
+                            Export CSV
+                        </a>
 
-                    <a
-                        href="/api/transactions/export"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
-                    >
-                        <Download className="size-4" aria-hidden="true" />
-                        Export CSV
-                    </a>
+                        <div className="flex justify-end">
+                            <SignOutButton />
+                        </div>
+                    </div>
                 </header>
 
                 <form

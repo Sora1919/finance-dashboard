@@ -7,6 +7,7 @@ import { getFinancialSummary } from "@/lib/finance-summary";
 import { getFinanceActivity } from "@/lib/finance-activity";
 import TransactionForm from "./transaction-form";
 import TransactionActions from "./transaction-actions";
+import SignOutButton from "@/app/dashboard/sign-out-button";
 
 function Icon({
                   name,
@@ -118,12 +119,12 @@ function DashboardOverview({
 
     return (
             <div className="px-4 py-8 pb-24 text-slate-900 sm:px-6 lg:px-8 lg:pb-8">
-                <header className="sticky top-0 z-10 flex h-18 items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-8">
+                <header className="sticky top-0 z-10 flex h-18 items-center justify-between gap-2 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:gap-4 sm:px-8">
                     <div className="min-w-0">
                         <p className="text-xs text-slate-400">Workspace / Overview</p>
                         <h1 className="mt-0.5 truncate text-lg font-semibold">Dashboard</h1>
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                         <div className="hidden items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-400 md:flex">
                             <Icon name="search" className="size-4" />
                             <span>Search</span>
@@ -136,6 +137,7 @@ function DashboardOverview({
                         <div className="flex size-9 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-800">
                             {name.trim().charAt(0).toUpperCase() || "U"}
                         </div>
+                        <SignOutButton />
                     </div>
                 </header>
 
