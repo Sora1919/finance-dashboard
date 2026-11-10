@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { buttonStyles } from "@/lib/button-styles";
 
 const initialForm = {
     title: "",
@@ -212,7 +213,7 @@ export default function TransactionForm() {
                     setError("");
                     setIsOpen(true);
                 }}
-                className="inline-flex w-fit items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+                className={buttonStyles.primary}
             >
                 <span aria-hidden="true" className="text-lg leading-none">+</span>
                 Add transaction
@@ -516,14 +517,14 @@ export default function TransactionForm() {
                                     type="button"
                                     disabled={isSubmitting}
                                     onClick={() => setIsOpen(false)}
-                                    className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                                    className={buttonStyles.secondary}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className={buttonStyles.primary}
                                 >
                                     {isSubmitting ? "Saving..." : "Save transaction"}
                                 </button>

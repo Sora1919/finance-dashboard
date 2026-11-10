@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import { Download } from "lucide-react";
 import { Prisma } from "@/generated/prisma/client";
 import SignOutButton from "@/app/dashboard/sign-out-button";
+import { buttonStyles } from "@/lib/button-styles";
 
 type SearchParams = Promise<{
     q?: string;
@@ -213,7 +214,7 @@ async function TransactionsContent({
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <a
                             href="/api/transactions/export"
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                            className={`${buttonStyles.primary} w-full sm:w-auto`}
                         >
                             <Download className="size-4" aria-hidden="true" />
                             Export CSV
@@ -342,13 +343,13 @@ async function TransactionsContent({
                     <div className="flex items-end gap-2">
                         <button
                             type="submit"
-                            className="flex-1 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800"
+                            className={`flex-1 ${buttonStyles.primary}`}
                         >
                             Apply filters
                         </button>
                         <a
                             href="/dashboard/transactions"
-                            className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                            className={buttonStyles.secondary}
                         >
                             Reset
                         </a>

@@ -9,6 +9,7 @@ import {
     type KeyboardEvent,
 } from "react";
 import { useRouter } from "next/navigation";
+import { buttonStyles } from "@/lib/button-styles";
 
 type Transaction = {
     id: string;
@@ -269,7 +270,7 @@ export default function TransactionActions({
                     type="button"
                     onClick={openEditor}
                     disabled={isDeleting || isSubmitting || isDeleteOpen}
-                    className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                    className={buttonStyles.secondary}
                 >
                     Edit
                 </button>
@@ -279,7 +280,7 @@ export default function TransactionActions({
                     type="button"
                     onClick={openDeleteDialog}
                     disabled={isDeleting || isSubmitting}
-                    className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                    className={buttonStyles.dangerOutline}
                 >
                     Delete
                 </button>
@@ -320,7 +321,7 @@ export default function TransactionActions({
                                 aria-label="Close edit form"
                                 disabled={isSubmitting}
                                 onClick={closeEditor}
-                                className="rounded-lg px-3 py-1 text-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+                                className={buttonStyles.secondary}
                             >
                                 ×
                             </button>
@@ -487,14 +488,14 @@ export default function TransactionActions({
                                     type="button"
                                     disabled={isSubmitting}
                                     onClick={closeEditor}
-                                    className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                                    className={buttonStyles.secondary}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className={buttonStyles.primary}
                                 >
                                     {isSubmitting ? "Saving..." : "Save changes"}
                                 </button>
@@ -576,7 +577,7 @@ export default function TransactionActions({
                                 type="button"
                                 onClick={closeDeleteDialog}
                                 disabled={isDeleting}
-                                className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                                className={buttonStyles.secondary}
                             >
                                 Cancel
                             </button>
@@ -585,7 +586,7 @@ export default function TransactionActions({
                                 type="button"
                                 onClick={handleDelete}
                                 disabled={isDeleting}
-                                className="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                className={buttonStyles.danger}
                             >
                                 {isDeleting ? "Deleting..." : "Delete transaction"}
                             </button>
