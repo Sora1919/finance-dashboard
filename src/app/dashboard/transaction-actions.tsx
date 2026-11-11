@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/lib/button-styles";
+import { formStyles } from "@/lib/form-styles";
 
 type Transaction = {
     id: string;
@@ -331,7 +332,7 @@ export default function TransactionActions({
                             <div>
                                 <label
                                     htmlFor={`title-${transaction.id}`}
-                                    className="mb-1.5 block text-sm font-medium text-slate-700"
+                                    className={formStyles.label}
                                 >
                                     Title
                                 </label>
@@ -347,7 +348,7 @@ export default function TransactionActions({
                                             title: event.target.value,
                                         })
                                     }
-                                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                    className={formStyles.input}
                                 />
                             </div>
 
@@ -355,7 +356,7 @@ export default function TransactionActions({
                                 <div>
                                     <label
                                         htmlFor={`amount-${transaction.id}`}
-                                        className="mb-1.5 block text-sm font-medium text-slate-700"
+                                        className={formStyles.label}
                                     >
                                         Amount (USD)
                                     </label>
@@ -373,14 +374,14 @@ export default function TransactionActions({
                                                 amount: event.target.value,
                                             })
                                         }
-                                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        className={formStyles.input}
                                     />
                                 </div>
 
                                 <div>
                                     <label
                                         htmlFor={`type-${transaction.id}`}
-                                        className="mb-1.5 block text-sm font-medium text-slate-700"
+                                        className={formStyles.label}
                                     >
                                         Type
                                     </label>
@@ -395,7 +396,7 @@ export default function TransactionActions({
                                                     | "expense",
                                             })
                                         }
-                                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        className={formStyles.select}
                                     >
                                         <option value="expense">Expense</option>
                                         <option value="income">Income</option>
@@ -407,7 +408,7 @@ export default function TransactionActions({
                                 <div>
                                     <label
                                         htmlFor={`category-${transaction.id}`}
-                                        className="mb-1.5 block text-sm font-medium text-slate-700"
+                                        className={formStyles.label}
                                     >
                                         Category
                                     </label>
@@ -422,14 +423,14 @@ export default function TransactionActions({
                                                 category: event.target.value,
                                             })
                                         }
-                                        className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        className={formStyles.input}
                                     />
                                 </div>
 
                                 <div>
                                     <label
                                         htmlFor={`date-${transaction.id}`}
-                                        className="mb-1.5 block text-sm font-medium text-slate-700"
+                                        className={formStyles.label}
                                     >
                                         Date
                                     </label>
@@ -444,7 +445,7 @@ export default function TransactionActions({
                                                 date: event.target.value,
                                             })
                                         }
-                                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                        className={formStyles.input}
                                     />
                                 </div>
                             </div>
@@ -452,7 +453,7 @@ export default function TransactionActions({
                             <div>
                                 <label
                                     htmlFor={`description-${transaction.id}`}
-                                    className="mb-1.5 block text-sm font-medium text-slate-700"
+                                    className={formStyles.label}
                                 >
                                     Description{" "}
                                     <span className="font-normal text-slate-400">
@@ -470,7 +471,7 @@ export default function TransactionActions({
                                             description: event.target.value,
                                         })
                                     }
-                                    className="w-full resize-y rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15"
+                                    className={formStyles.textarea}
                                 />
                             </div>
 

@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/lib/button-styles";
+import { formStyles } from "@/lib/form-styles";
 
 const initialForm = {
     title: "",
@@ -287,16 +288,14 @@ export default function TransactionForm() {
                                         }
                                     }}
                                     placeholder="e.g. Monthly salary"
-                                    className={`w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-emerald-600/15 ${
-                                        fieldErrors.title
-                                            ? "border-rose-400 focus:border-rose-500"
-                                            : "border-slate-200 focus:border-emerald-600"
+                                    className={`${formStyles.input} ${
+                                        fieldErrors.title ? formStyles.error : ""
                                     }`}
                                 />
                                 {fieldErrors.title && (
                                     <p
                                         id="transaction-title-error"
-                                        className="mt-1.5 text-sm text-rose-600"
+                                        className={formStyles.errorMessage}
                                     >
                                         {fieldErrors.title}
                                     </p>
@@ -305,7 +304,7 @@ export default function TransactionForm() {
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label htmlFor="transaction-amount" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                    <label htmlFor="transaction-amount" className={formStyles.label}>
                                         Amount (USD)
                                     </label>
 
@@ -330,16 +329,14 @@ export default function TransactionForm() {
                                             });
                                         }}
                                         placeholder="0.00"
-                                        className={`w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-emerald-600/15 ${
-                                            fieldErrors.amount
-                                                ? "border-rose-400 focus:border-rose-500"
-                                                : "border-slate-200 focus:border-emerald-600"
+                                        className={`${formStyles.input} ${
+                                            fieldErrors.title ? formStyles.error : ""
                                         }`}
                                     />
                                     {fieldErrors.amount && (
                                         <p
                                             id="transaction-amount-error"
-                                            className="mt-1.5 text-sm text-rose-600"
+                                            className={formStyles.errorMessage}
                                         >
                                             {fieldErrors.amount}
                                         </p>
@@ -347,7 +344,7 @@ export default function TransactionForm() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="transaction-type" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                    <label htmlFor="transaction-type" className={formStyles.label}>
                                         Type
                                     </label>
 
@@ -366,10 +363,8 @@ export default function TransactionForm() {
                                                 return next;
                                             });
                                         }}
-                                        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
-                                            fieldErrors.type
-                                                ? "border-rose-400 focus:border-rose-500"
-                                                : "border-slate-200 focus:border-emerald-600"
+                                        className={`${formStyles.select} ${
+                                            fieldErrors.title ? formStyles.error : ""
                                         }`}
                                     >
                                         <option value="expense">Expense</option>
@@ -378,7 +373,7 @@ export default function TransactionForm() {
                                     {fieldErrors.type && (
                                         <p
                                             id="transaction-type-error"
-                                            className="mt-1.5 text-sm text-rose-600"
+                                            className={formStyles.errorMessage}
                                         >
                                             {fieldErrors.type}
                                         </p>
@@ -388,7 +383,7 @@ export default function TransactionForm() {
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label htmlFor="transaction-category" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                    <label htmlFor="transaction-category" className={formStyles.label}>
                                         Category
                                     </label>
 
@@ -410,16 +405,14 @@ export default function TransactionForm() {
                                             });
                                         }}
                                         placeholder="e.g. Food, Salary"
-                                        className={`w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
-                                            fieldErrors.category
-                                                ? "border-rose-400 focus:border-rose-500"
-                                                : "border-slate-200 focus:border-emerald-600"
+                                        className={`${formStyles.input} ${
+                                            fieldErrors.title ? formStyles.error : ""
                                         }`}
                                     />
                                     {fieldErrors.category && (
                                         <p
                                             id="transaction-category-error"
-                                            className="mt-1.5 text-sm text-rose-600"
+                                            className={formStyles.errorMessage}
                                         >
                                             {fieldErrors.category}
                                         </p>
@@ -427,7 +420,7 @@ export default function TransactionForm() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="transaction-date" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                    <label htmlFor="transaction-date" className={formStyles.label}>
                                         Date
                                     </label>
 
@@ -448,16 +441,14 @@ export default function TransactionForm() {
                                                 return next;
                                             });
                                         }}
-                                        className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
-                                            fieldErrors.date
-                                                ? "border-rose-400 focus:border-rose-500"
-                                                : "border-slate-200 focus:border-emerald-600"
+                                        className={`${formStyles.input} ${
+                                            fieldErrors.title ? formStyles.error : ""
                                         }`}
                                     />
                                     {fieldErrors.date && (
                                         <p
                                             id="transaction-date-error"
-                                            className="mt-1.5 text-sm text-rose-600"
+                                            className={formStyles.errorMessage}
                                         >
                                             {fieldErrors.date}
                                         </p>
@@ -466,7 +457,7 @@ export default function TransactionForm() {
                             </div>
 
                             <div>
-                                <label htmlFor="transaction-description" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                <label htmlFor="transaction-description" className={formStyles.label}>
                                     Description <span className="font-normal text-slate-400">(optional)</span>
                                 </label>
 
@@ -490,16 +481,14 @@ export default function TransactionForm() {
                                         });
                                     }}
                                     placeholder="Add a note..."
-                                    className={`w-full resize-y rounded-xl border px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-600/15 ${
-                                        fieldErrors.description
-                                            ? "border-rose-400 focus:border-rose-500"
-                                            : "border-slate-200 focus:border-emerald-600"
+                                    className={`${formStyles.textarea} ${
+                                        fieldErrors.title ? formStyles.error : ""
                                     }`}
                                 />
                                 {fieldErrors.description && (
                                     <p
                                         id="transaction-description-error"
-                                        className="mt-1.5 text-sm text-rose-600"
+                                        className={formStyles.errorMessage}
                                     >
                                         {fieldErrors.description}
                                     </p>
