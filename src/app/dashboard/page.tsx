@@ -8,6 +8,7 @@ import { getFinanceActivity } from "@/lib/finance-activity";
 import TransactionForm from "./transaction-form";
 import TransactionActions from "./transaction-actions";
 import SignOutButton from "@/app/dashboard/sign-out-button";
+import DashboardSkeleton from "@/app/dashboard/dashboard-skeleton";
 
 function Icon({
                   name,
@@ -89,7 +90,7 @@ function SummaryCard({
                     <Icon name={icon} />
                 </span>
             </div>
-            <p className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
+            <p className="mt-5 wrap-break-word text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">
                 {amount}
             </p>
             <p className={`mt-2 text-xs ${type === "balance" ? "text-slate-300" : "text-slate-500"}`}>
@@ -387,9 +388,9 @@ function DashboardOverview({
     );
 }
 
-export default async function DashboardPage() {
+export default function DashboardPage() {
     return (
-        <Suspense fallback={<main className="p-6 text-sm text-slate-500">Loading dashboard...</main>}>
+        <Suspense fallback={<DashboardSkeleton />}>
             <DashboardContent />
         </Suspense>
     );

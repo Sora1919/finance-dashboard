@@ -5,10 +5,11 @@ import TransactionActions from "../transaction-actions";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Download } from "lucide-react";
+import { Download, Inbox } from "lucide-react";
 import { Prisma } from "@/generated/prisma/client";
 import SignOutButton from "@/app/dashboard/sign-out-button";
 import { buttonStyles } from "@/lib/button-styles";
+import TransactionsSkeleton from "@/app/dashboard/transactions/transactions-skeleton";
 
 type SearchParams = Promise<{
     q?: string;
@@ -56,13 +57,7 @@ export default function TransactionsPage({
     searchParams: SearchParams;
 }) {
     return (
-        <Suspense
-            fallback={
-                <div className="p-8 text-sm text-slate-500">
-                    Loading transactions...
-                </div>
-            }
-        >
+        <Suspense fallback={<TransactionsSkeleton />} >
             <TransactionsContent searchParams={searchParams} />
         </Suspense>
     );
@@ -132,6 +127,10 @@ async function TransactionsContent({
             }
             : {}),
     };
+
+    const hasActiveFilters = Boolean(
+        q || type || category || from || to,
+    );
 
     const orderBy =
         sort === "date-asc"
@@ -212,6 +211,7 @@ async function TransactionsContent({
 
                     {/* Header actions */}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- This link downloads a CSV file from an API route, not a Next.js page. */}
                         <a
                             href="/api/transactions/export"
                             className={`${buttonStyles.primary} w-full sm:w-auto`}
@@ -358,16 +358,39 @@ async function TransactionsContent({
 
                 <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     {transactions.length === 0 ? (
-                        <div className="px-6 py-16 text-center">
-                            <h2 className="text-lg font-semibold">
-                                No transactions found
+                        <div className="flex flex-col items-center px-6 py-16 text-center">
+                            <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                                <Inbox className="size-7" aria-hidden="true" />
+                            </div>
+
+                            <h2 className="mt-5 text-lg font-semibold text-slate-900">
+                                {hasActiveFilters
+                                    ? "No matching transactions"
+                                    : "No transactions yet"}
                             </h2>
-                            <p className="mt-2 text-sm text-slate-500">
-                                Try changing your search or filters.
+
+                            <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                                {hasActiveFilters
+                                    ? "We couldn't find transactions matching your filters. Try adjusting your search or clearing the filters."
+                                    : "Your transaction history will appear here once you start tracking your income and expenses."}
                             </p>
+
+                            {hasActiveFilters && (
+                                <a
+                                    href="/dashboard/transactions"
+                                    className={`${buttonStyles.secondary} mt-6`}
+                                >
+                                    Clear filters
+                                </a>
+                            )}
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div
+                            role="region"
+                            aria-label="Transaction history table"
+                            tabIndex={0}
+                            className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+                        >
                             <table className="w-full min-w-225 text-left text-sm">
                                 <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                                 <tr>
