@@ -1,10 +1,19 @@
 
 "use client";
 
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { buttonStyles } from "@/lib/button-styles";
 import { formStyles } from "@/lib/form-styles";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import {X} from "lucide-react";
 
 const initialForm = {
     title: "",
@@ -24,9 +33,6 @@ export default function TransactionForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    const addButtonRef = useRef<HTMLButtonElement>(null);
-    const dialogRef = useRef<HTMLElement>(null);
-
     useEffect(() => {
         if (!success) return;
 
@@ -37,56 +43,16 @@ export default function TransactionForm() {
         return () => window.clearTimeout(timeoutId);
     }, [success]);
 
-    useEffect(() => {
-        if (isOpen) {
-            dialogRef.current
-                ?.querySelector<HTMLInputElement>("#transaction-title")
-                ?.focus();
-        } else {
-            addButtonRef.current?.focus();
+    function handleOpenChange(open: boolean) {
+        if (isSubmitting) return;
+
+        setIsOpen(open);
+
+        if (open) {
+            setError("");
+            setFieldErrors({});
         }
-    }, [isOpen]);
-
-    useEffect(() => {
-        if (!isOpen) return;
-
-        function handleKeyDown(event: KeyboardEvent) {
-            if (event.key === "Escape") {
-                if (!isSubmitting) {
-                    setIsOpen(false);
-                }
-                return;
-            }
-
-            if (event.key !== "Tab") return;
-
-            const dialog = dialogRef.current;
-            if (!dialog) return;
-
-            const focusableElements = dialog.querySelectorAll<HTMLElement>(
-                'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
-            );
-
-            if (focusableElements.length === 0) return;
-
-            const first = focusableElements[0];
-            const last = focusableElements[focusableElements.length - 1];
-
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-            }
-        }
-
-        document.addEventListener("keydown", handleKeyDown);
-
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [isOpen, isSubmitting]);
+    }
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -138,6 +104,24 @@ export default function TransactionForm() {
         if (Object.keys(nextFieldErrors).length > 0) {
             setFieldErrors(nextFieldErrors);
             setError("");
+
+            const firstInvalidField = Object.keys(nextFieldErrors)[0];
+
+            const fieldIds: Record<string, string> = {
+                title: "transaction-title",
+                amount: "transaction-amount",
+                type: "transaction-type",
+                category: "transaction-category",
+                date: "transaction-date",
+                description: "transaction-description",
+            };
+
+            const fieldId = fieldIds[firstInvalidField];
+
+            if (fieldId) {
+                document.getElementById(fieldId)?.focus();
+            }
+
             return;
         }
 
@@ -207,321 +191,321 @@ export default function TransactionForm() {
                 </p>
             )}
 
-            <button
-                ref={addButtonRef}
-                type="button"
-                onClick={() => {
-                    setError("");
-                    setIsOpen(true);
-                }}
-                className={buttonStyles.primary}
-            >
-                <span aria-hidden="true" className="text-lg leading-none">+</span>
-                Add transaction
-            </button>
+            <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+                <DialogTrigger asChild>
+                    <button
+                        type="button"
+                        disabled={isSubmitting}
+                        className={buttonStyles.primary}
+                    >
+                    <span aria-hidden="true" className="text-lg leading-none">
+                        +
+                    </span>
+                        Add transaction
+                    </button>
+                </DialogTrigger>
 
-            {isOpen && (
-                <div
-                    className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-                    onMouseDown={(event) => {
-                        if (event.target === event.currentTarget && !isSubmitting) {
-                            setIsOpen(false);
-                        }
+                <DialogContent
+                    showCloseButton={false}
+                    className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 sm:p-7"
+                    onEscapeKeyDown={(event) => {
+                        if (isSubmitting) event.preventDefault();
+                    }}
+                    onInteractOutside={(event) => {
+                        if (isSubmitting) event.preventDefault();
+                    }}
+                    onOpenAutoFocus={(event) => {
+                        event.preventDefault();
+
+                        document
+                            .getElementById("transaction-title")
+                            ?.focus();
                     }}
                 >
-                    <section
-                        ref={dialogRef}
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="transaction-form-title"
-                        className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl sm:p-7"
-                    >
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
-                                <h2
-                                    id="transaction-form-title"
-                                    className="text-xl font-bold tracking-tight"
-                                >
-                                    Add transaction
-                                </h2>
-                                <p className="mt-1 text-sm text-slate-500">
-                                    Record income or an expense.
-                                </p>
-                            </div>
+                    <DialogHeader className="flex flex-row items-start justify-between gap-4 space-y-0 text-left">
+                        <div className="min-w-0">
+                            <DialogTitle className="text-xl font-bold tracking-tight">
+                                Add transaction
+                            </DialogTitle>
 
-                            <button
-                                type="button"
-                                aria-label="Close form"
-                                disabled={isSubmitting}
-                                onClick={() => setIsOpen(false)}
-                                className="rounded-lg px-3 py-1 text-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
-                            >
-                                ×
-                            </button>
+                            <DialogDescription className="mt-1 text-sm text-slate-500">
+                                Record income or an expense.
+                            </DialogDescription>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
-                            <div>
-                                <label htmlFor="transaction-title" className="mb-1.5 block text-sm font-medium text-slate-700">
-                                    Title
-                                </label>
-                                <input
-                                    id="transaction-title"
-                                    required
-                                    maxLength={120}
-                                    aria-invalid={Boolean(fieldErrors.title)}
-                                    aria-describedby={
-                                        fieldErrors.title
-                                            ? "transaction-title-error"
-                                            : undefined
-                                    }
-                                    value={form.title}
-                                    onChange={(event) => {
-                                        setForm({ ...form, title: event.target.value });
+                        <button
+                            type="button"
+                            aria-label="Close form"
+                            disabled={isSubmitting}
+                            onClick={() => handleOpenChange(false)}
+                            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:opacity-50"
+                        >
+                            <X className="size-5" aria-hidden="true" />
+                        </button>
+                    </DialogHeader>
 
-                                        if (fieldErrors.title) {
-                                            setFieldErrors((current) => {
-                                                const next = { ...current };
-                                                delete next.title;
-                                                return next;
-                                            });
-                                        }
-                                    }}
-                                    placeholder="e.g. Monthly salary"
-                                    className={`${formStyles.input} ${
-                                        fieldErrors.title ? formStyles.error : ""
-                                    }`}
-                                />
-                                {fieldErrors.title && (
-                                    <p
-                                        id="transaction-title-error"
-                                        className={formStyles.errorMessage}
-                                    >
-                                        {fieldErrors.title}
-                                    </p>
-                                )}
-                            </div>
+                    <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+                        <div>
+                            <label htmlFor="transaction-title" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                Title
+                            </label>
+                            <input
+                                id="transaction-title"
+                                required
+                                maxLength={120}
+                                aria-invalid={Boolean(fieldErrors.title)}
+                                aria-describedby={
+                                    fieldErrors.title
+                                        ? "transaction-title-error"
+                                        : undefined
+                                }
+                                value={form.title}
+                                onChange={(event) => {
+                                    setForm({ ...form, title: event.target.value });
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label htmlFor="transaction-amount" className={formStyles.label}>
-                                        Amount (USD)
-                                    </label>
-
-                                    <input
-                                        id="transaction-amount"
-                                        required
-                                        type="number"
-                                        min="0.01"
-                                        max="9999999999.99"
-                                        step="0.01"
-                                        aria-invalid={Boolean(fieldErrors.amount)}
-                                        aria-describedby={
-                                            fieldErrors.amount ? "transaction-amount-error" : undefined
-                                        }
-                                        value={form.amount}
-                                        onChange={(event) => {
-                                            setForm({ ...form, amount: event.target.value });
-                                            setFieldErrors((current) => {
-                                                const next = { ...current };
-                                                delete next.amount;
-                                                return next;
-                                            });
-                                        }}
-                                        placeholder="0.00"
-                                        className={`${formStyles.input} ${
-                                            fieldErrors.title ? formStyles.error : ""
-                                        }`}
-                                    />
-                                    {fieldErrors.amount && (
-                                        <p
-                                            id="transaction-amount-error"
-                                            className={formStyles.errorMessage}
-                                        >
-                                            {fieldErrors.amount}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label htmlFor="transaction-type" className={formStyles.label}>
-                                        Type
-                                    </label>
-
-                                    <select
-                                        id="transaction-type"
-                                        aria-invalid={Boolean(fieldErrors.type)}
-                                        aria-describedby={
-                                            fieldErrors.type ? "transaction-type-error" : undefined
-                                        }
-                                        value={form.type}
-                                        onChange={(event) => {
-                                            setForm({ ...form, type: event.target.value });
-                                            setFieldErrors((current) => {
-                                                const next = { ...current };
-                                                delete next.type;
-                                                return next;
-                                            });
-                                        }}
-                                        className={`${formStyles.select} ${
-                                            fieldErrors.title ? formStyles.error : ""
-                                        }`}
-                                    >
-                                        <option value="expense">Expense</option>
-                                        <option value="income">Income</option>
-                                    </select>
-                                    {fieldErrors.type && (
-                                        <p
-                                            id="transaction-type-error"
-                                            className={formStyles.errorMessage}
-                                        >
-                                            {fieldErrors.type}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label htmlFor="transaction-category" className={formStyles.label}>
-                                        Category
-                                    </label>
-
-                                    <input
-                                        id="transaction-category"
-                                        required
-                                        maxLength={80}
-                                        aria-invalid={Boolean(fieldErrors.category)}
-                                        aria-describedby={
-                                            fieldErrors.category ? "transaction-category-error" : undefined
-                                        }
-                                        value={form.category}
-                                        onChange={(event) => {
-                                            setForm({ ...form, category: event.target.value });
-                                            setFieldErrors((current) => {
-                                                const next = { ...current };
-                                                delete next.category;
-                                                return next;
-                                            });
-                                        }}
-                                        placeholder="e.g. Food, Salary"
-                                        className={`${formStyles.input} ${
-                                            fieldErrors.title ? formStyles.error : ""
-                                        }`}
-                                    />
-                                    {fieldErrors.category && (
-                                        <p
-                                            id="transaction-category-error"
-                                            className={formStyles.errorMessage}
-                                        >
-                                            {fieldErrors.category}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label htmlFor="transaction-date" className={formStyles.label}>
-                                        Date
-                                    </label>
-
-                                    <input
-                                        id="transaction-date"
-                                        required
-                                        type="date"
-                                        aria-invalid={Boolean(fieldErrors.date)}
-                                        aria-describedby={
-                                            fieldErrors.date ? "transaction-date-error" : undefined
-                                        }
-                                        value={form.date}
-                                        onChange={(event) => {
-                                            setForm({ ...form, date: event.target.value });
-                                            setFieldErrors((current) => {
-                                                const next = { ...current };
-                                                delete next.date;
-                                                return next;
-                                            });
-                                        }}
-                                        className={`${formStyles.input} ${
-                                            fieldErrors.title ? formStyles.error : ""
-                                        }`}
-                                    />
-                                    {fieldErrors.date && (
-                                        <p
-                                            id="transaction-date-error"
-                                            className={formStyles.errorMessage}
-                                        >
-                                            {fieldErrors.date}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label htmlFor="transaction-description" className={formStyles.label}>
-                                    Description <span className="font-normal text-slate-400">(optional)</span>
-                                </label>
-
-                                <textarea
-                                    id="transaction-description"
-                                    maxLength={500}
-                                    rows={3}
-                                    aria-invalid={Boolean(fieldErrors.description)}
-                                    aria-describedby={
-                                        fieldErrors.description
-                                            ? "transaction-description-error"
-                                            : undefined
-                                    }
-                                    value={form.description}
-                                    onChange={(event) => {
-                                        setForm({ ...form, description: event.target.value });
+                                    if (fieldErrors.title) {
                                         setFieldErrors((current) => {
                                             const next = { ...current };
-                                            delete next.description;
+                                            delete next.title;
+                                            return next;
+                                        });
+                                    }
+                                }}
+                                placeholder="e.g. Monthly salary"
+                                className={`${formStyles.input} ${
+                                    fieldErrors.title ? formStyles.error : ""
+                                }`}
+                            />
+                            {fieldErrors.title && (
+                                <p
+                                    id="transaction-title-error"
+                                    className={formStyles.errorMessage}
+                                >
+                                    {fieldErrors.title}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label htmlFor="transaction-amount" className={formStyles.label}>
+                                    Amount (USD)
+                                </label>
+
+                                <input
+                                    id="transaction-amount"
+                                    required
+                                    type="number"
+                                    min="0.01"
+                                    max="9999999999.99"
+                                    step="0.01"
+                                    aria-invalid={Boolean(fieldErrors.amount)}
+                                    aria-describedby={
+                                        fieldErrors.amount ? "transaction-amount-error" : undefined
+                                    }
+                                    value={form.amount}
+                                    onChange={(event) => {
+                                        setForm({ ...form, amount: event.target.value });
+                                        setFieldErrors((current) => {
+                                            const next = { ...current };
+                                            delete next.amount;
                                             return next;
                                         });
                                     }}
-                                    placeholder="Add a note..."
-                                    className={`${formStyles.textarea} ${
-                                        fieldErrors.title ? formStyles.error : ""
+                                    placeholder="0.00"
+                                    className={`${formStyles.input} ${
+                                        fieldErrors.amount ? formStyles.error : ""
                                     }`}
                                 />
-                                {fieldErrors.description && (
+                                {fieldErrors.amount && (
                                     <p
-                                        id="transaction-description-error"
+                                        id="transaction-amount-error"
                                         className={formStyles.errorMessage}
                                     >
-                                        {fieldErrors.description}
+                                        {fieldErrors.amount}
                                     </p>
                                 )}
                             </div>
 
-                            {error && (
-                                <p role="alert" className="rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">
-                                    {error}
+                            <div>
+                                <label htmlFor="transaction-type" className={formStyles.label}>
+                                    Type
+                                </label>
+
+                                <select
+                                    id="transaction-type"
+                                    aria-invalid={Boolean(fieldErrors.type)}
+                                    aria-describedby={
+                                        fieldErrors.type ? "transaction-type-error" : undefined
+                                    }
+                                    value={form.type}
+                                    onChange={(event) => {
+                                        setForm({ ...form, type: event.target.value });
+                                        setFieldErrors((current) => {
+                                            const next = { ...current };
+                                            delete next.type;
+                                            return next;
+                                        });
+                                    }}
+                                    className={`${formStyles.select} ${
+                                        fieldErrors.type ? formStyles.error : ""
+                                    }`}
+                                >
+                                    <option value="expense">Expense</option>
+                                    <option value="income">Income</option>
+                                </select>
+                                {fieldErrors.type && (
+                                    <p
+                                        id="transaction-type-error"
+                                        className={formStyles.errorMessage}
+                                    >
+                                        {fieldErrors.type}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label htmlFor="transaction-category" className={formStyles.label}>
+                                    Category
+                                </label>
+
+                                <input
+                                    id="transaction-category"
+                                    required
+                                    maxLength={80}
+                                    aria-invalid={Boolean(fieldErrors.category)}
+                                    aria-describedby={
+                                        fieldErrors.category ? "transaction-category-error" : undefined
+                                    }
+                                    value={form.category}
+                                    onChange={(event) => {
+                                        setForm({ ...form, category: event.target.value });
+                                        setFieldErrors((current) => {
+                                            const next = { ...current };
+                                            delete next.category;
+                                            return next;
+                                        });
+                                    }}
+                                    placeholder="e.g. Food, Salary"
+                                    className={`${formStyles.input} ${
+                                        fieldErrors.category ? formStyles.error : ""
+                                    }`}
+                                />
+                                {fieldErrors.category && (
+                                    <p
+                                        id="transaction-category-error"
+                                        className={formStyles.errorMessage}
+                                    >
+                                        {fieldErrors.category}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label htmlFor="transaction-date" className={formStyles.label}>
+                                    Date
+                                </label>
+
+                                <input
+                                    id="transaction-date"
+                                    required
+                                    type="date"
+                                    aria-invalid={Boolean(fieldErrors.date)}
+                                    aria-describedby={
+                                        fieldErrors.date ? "transaction-date-error" : undefined
+                                    }
+                                    value={form.date}
+                                    onChange={(event) => {
+                                        setForm({ ...form, date: event.target.value });
+                                        setFieldErrors((current) => {
+                                            const next = { ...current };
+                                            delete next.date;
+                                            return next;
+                                        });
+                                    }}
+                                    className={`${formStyles.input} ${
+                                        fieldErrors.date ? formStyles.error : ""
+                                    }`}
+                                />
+                                {fieldErrors.date && (
+                                    <p
+                                        id="transaction-date-error"
+                                        className={formStyles.errorMessage}
+                                    >
+                                        {fieldErrors.date}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="transaction-description" className={formStyles.label}>
+                                Description <span className="font-normal text-slate-400">(optional)</span>
+                            </label>
+
+                            <textarea
+                                id="transaction-description"
+                                maxLength={500}
+                                rows={3}
+                                aria-invalid={Boolean(fieldErrors.description)}
+                                aria-describedby={
+                                    fieldErrors.description
+                                        ? "transaction-description-error"
+                                        : undefined
+                                }
+                                value={form.description}
+                                onChange={(event) => {
+                                    setForm({ ...form, description: event.target.value });
+                                    setFieldErrors((current) => {
+                                        const next = { ...current };
+                                        delete next.description;
+                                        return next;
+                                    });
+                                }}
+                                placeholder="Add a note..."
+                                className={`${formStyles.textarea} ${
+                                    fieldErrors.description ? formStyles.error : ""
+                                }`}
+                            />
+                            {fieldErrors.description && (
+                                <p
+                                    id="transaction-description-error"
+                                    className={formStyles.errorMessage}
+                                >
+                                    {fieldErrors.description}
                                 </p>
                             )}
+                        </div>
 
-                            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-                                <button
-                                    type="button"
-                                    disabled={isSubmitting}
-                                    onClick={() => setIsOpen(false)}
-                                    className={buttonStyles.secondary}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className={buttonStyles.primary}
-                                >
-                                    {isSubmitting ? "Saving..." : "Save transaction"}
-                                </button>
-                            </div>
-                        </form>
-                    </section>
-                </div>
-            )}
+                        {error && (
+                            <p role="alert" className="rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">
+                                {error}
+                            </p>
+                        )}
+
+                        <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() => handleOpenChange(false)}
+                                className={buttonStyles.secondary}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={buttonStyles.primary}
+                            >
+                                {isSubmitting ? "Saving..." : "Save transaction"}
+                            </button>
+                        </div>
+                    </form>
+
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
