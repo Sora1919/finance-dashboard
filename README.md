@@ -1,36 +1,172 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mintly — Personal Finance Dashboard
+
+**Mintly** is a full-stack personal finance dashboard built with Next.js, React, TypeScript, Prisma, and MySQL. It helps users track income and expenses, manage transaction history, and understand their financial activity through a responsive dashboard.
+
+Built as a full-stack portfolio project, Mintly focuses on authentication, secure data access, financial data management, accessibility, and a clean user experience.
+
+## Features
+
+### Authentication
+- User registration and email/password login
+- Password hashing with bcrypt
+- Auth.js credentials authentication with JWT sessions
+- Protected dashboard routes
+- Redis-backed rate limiting for login and registration
+
+### Financial Dashboard
+- Current balance, total income, and total expenses
+- Six-month income-versus-expense chart
+- Financial overview and savings rate
+- Recent transactions with edit and delete actions
+
+### Transaction Management
+- Create, view, edit, and delete transactions
+- Income and expense categorization
+- Transaction dates and optional descriptions
+- Search by title, category, or description
+- Filter by type, category, and date range
+- Sort transactions and browse paginated results
+- Export transaction history to CSV
+
+### User Experience
+- Responsive desktop sidebar and mobile bottom navigation
+- Accessible Create, Edit, and Delete dialogs
+- Form validation with helpful error messages
+- Loading skeletons, empty states, and feedback messages
+- Consistent buttons, inputs, and keyboard focus indicators
+
+## Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | Next.js 16, React 19, TypeScript |
+| Styling | Tailwind CSS 4, shadcn/ui, Radix UI, Lucide React |
+| Backend | Next.js App Router and Route Handlers |
+| Authentication | Auth.js v5, bcrypt |
+| Database | MySQL, Prisma ORM 7, MariaDB adapter |
+| Validation | Zod |
+| Rate Limiting | Upstash Redis |
+| Package Manager | npm |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 22 LTS or another version supported by Prisma 7
+- npm
+- A running MySQL database
+- An Upstash Redis database
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Sora1919/finance-dashboard.git
+cd finance-dashboard
+```
+
+Install dependencies:
+
+```bash
+npm ci
+```
+
+Create a local environment configuration using `.env.example` as a template:
+
+```bash
+cp .env.example .env
+```
+
+Update `.env` with your local MySQL credentials, Auth.js secret, and Upstash Redis REST credentials.
+
+Never commit actual environment secrets.
+
+### Database Setup
+
+Ensure MySQL is running and the configured database is accessible.
+
+Apply the existing Prisma migrations:
+
+```bash
+npx prisma migrate deploy
+```
+
+Generate Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+### Run in Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Register an account, sign in, and start recording transactions.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Production Build
 
-## Learn More
+```bash
+npm run lint
+npm run build
+npm run start
+```
 
-To learn more about Next.js, take a look at the following resources:
+The application will run locally using the Next.js production server.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy `.env.example` and configure the following:
 
-## Deploy on Vercel
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | MySQL connection string for Prisma migrations |
+| `DATABASE_HOST` | MySQL database hostname |
+| `DATABASE_PORT` | MySQL database port |
+| `DATABASE_USER` | Database username |
+| `DATABASE_PASSWORD` | Database password |
+| `DATABASE_NAME` | Database name |
+| `AUTH_SECRET` | Auth.js session signing secret |
+| `AUTH_TRUST_HOST` | Host-trust setting when required by the deployment |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis authentication token |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+All credentials must be kept server-side and outside version control.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Security
+
+Mintly includes server-side validation, password hashing, authenticated API access, user-scoped transaction queries, and rate limits on authentication operations.
+
+Financial data is associated with each authenticated user. Transaction API operations check ownership before modifying records.
+
+Additional deployment security depends on the hosting provider, database permissions, secret management, and reverse-proxy configuration.
+
+## Deployment
+
+Mintly requires a Node.js-capable hosting platform, a MySQL-compatible database, and Upstash Redis.
+
+Before deployment:
+
+1. Configure production environment variables.
+2. Use a securely configured hosted database.
+3. Apply database migrations.
+4. Generate Prisma Client and build the application.
+5. Verify authentication, transactions, and CSV export in the deployed environment.
+
+## Project Status
+
+**v1.0 release preparation**
+
+The application has passed local development and production-mode testing. Public deployment is being prepared.
+
+## Repository
+
+[GitHub — Sora1919/finance-dashboard](https://github.com/Sora1919/finance-dashboard)
+
+---
+
+Built with Next.js, TypeScript, Prisma, and MySQL.
