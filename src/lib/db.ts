@@ -12,6 +12,7 @@ const adapter = new PrismaMariaDb({
     user: process.env.DATABASE_USER ?? "root",
     password: process.env.DATABASE_PASSWORD ?? "",
     database: process.env.DATABASE_NAME ?? "finance_dashboard",
+    ssl: process.env.DATABASE_SSL === "true" ? true : undefined,
     connectionLimit: 5,
 });
 
