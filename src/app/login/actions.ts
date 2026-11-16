@@ -33,6 +33,16 @@ export async function loginAction(
 
         return { error: null };
     } catch (error: unknown) {
+        if (
+            error instanceof AuthError &&
+            error.type === "CredentialsSignin" &&
+            "code" in error &&
+            error.code === "rate_limited"
+        ) {
+            return {
+                error: "Too many sign-in attempts. Please try again later.",
+            };
+        }
         // Auth.js uses a redirect signal after successful sign-in.
         // Re-throw it so Next.js can complete the redirect.
         if (error instanceof AuthError) {

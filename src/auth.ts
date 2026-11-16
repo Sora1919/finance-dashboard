@@ -3,8 +3,13 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-
+import { CredentialsSignin } from "next-auth";
+import { checkLoginRateLimit } from "@/lib/auth-rate-limit";
 import { db } from "@/lib/db";
+
+class LoginRateLimitError extends CredentialsSignin {
+    code = "rate_limited";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     session: {
@@ -28,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 },
             },
 
-            async authorize(credentials) {
+            async authorize(credentials, request) {
                 const parsedCredentials = z
                     .object({
                         email: z.string().trim().email(),
@@ -41,6 +46,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 }
 
                 const { email, password } = parsedCredentials.data;
+
+                const allowed = await checkLoginRateLimit(request, email);
+
+                if (!allowed) {
+                    throw new LoginRateLimitError();
+                }
 
                 const user = await db.user.findUnique({
                     where: { email },

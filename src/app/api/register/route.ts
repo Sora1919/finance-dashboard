@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-
+import { checkRegisterRateLimit } from "@/lib/auth-rate-limit";
 import { db } from "@/lib/db";
 
 const registerSchema = z.object({
@@ -30,6 +30,24 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
+
+    const allowed = await checkRegisterRateLimit(request);
+
+    if (!allowed) {
+        return NextResponse.json(
+            {
+                message:
+                    "Too many registration attempts. Please try again later.",
+            },
+            {
+                status: 429,
+                headers: {
+                    "Retry-After": "3600",
+                },
+            },
+        );
+    }
+
     let body: unknown;
 
     try {
