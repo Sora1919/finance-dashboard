@@ -4,6 +4,29 @@
 
 Built as a full-stack portfolio project, Mintly focuses on authentication, secure data access, financial data management, accessibility, and a clean user experience.
 
+## Live Demo
+
+**Mintly v1.0.0 is live!**
+
+[Launch Mintly](https://mintlyweb-production.up.railway.app/)
+
+Create an account to explore the financial dashboard, manage transactions, visualize income and expenses, and export transaction history to CSV.
+
+## Deployment Architecture
+
+- **Application hosting:** Railway (Next.js)
+- **Production database:** Railway MySQL
+- **ORM:** Prisma with the MariaDB adapter
+- **Authentication:** Auth.js v5
+- **Rate limiting:** Upstash Redis
+- **Database networking:** Railway private service network
+
+## Project Status
+
+**Version:** v1.0.0 — Initial Release
+
+Mintly has been deployed successfully and its core features have been tested in the production environment.
+
 ## Features
 
 ### Authentication
